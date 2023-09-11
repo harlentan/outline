@@ -31,6 +31,7 @@ import {
   NotificationEventType,
   NotificationEventDefaults,
   UserRole,
+  DocumentPermission,
 } from "@shared/types";
 import { stringToColor } from "@shared/utils/color";
 import env from "@server/env";
@@ -242,6 +243,12 @@ class User extends ParanoidModel {
     return this.isViewer
       ? CollectionPermission.Read
       : CollectionPermission.ReadWrite;
+  }
+
+  get defaultDocumentPermission(): DocumentPermission {
+    return this.isViewer
+      ? DocumentPermission.Read
+      : DocumentPermission.ReadWrite;
   }
 
   /**
