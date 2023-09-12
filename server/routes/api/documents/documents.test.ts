@@ -3928,7 +3928,7 @@ describe("#documents.add_user", () => {
     expect(res.status).toEqual(401);
   });
 
-  it.only("should succeed with status 200 ok", async () => {
+  it("should succeed with status 200 ok", async () => {
     const user = await buildUser();
     const document = await buildDocument({
       createdById: user.id,
@@ -3944,6 +3944,8 @@ describe("#documents.add_user", () => {
       },
     });
 
+    const users = await document.$get("users");
     expect(res.status).toEqual(200);
+    expect(users.length).toEqual(1);
   });
 });

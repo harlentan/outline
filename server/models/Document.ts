@@ -30,6 +30,7 @@ import {
   Length as SimpleLength,
   IsNumeric,
   IsDate,
+  BelongsToMany,
 } from "sequelize-typescript";
 import isUUID from "validator/lib/isUUID";
 import type { NavigationNode } from "@shared/types";
@@ -39,6 +40,7 @@ import { SLUG_URL_REGEX } from "@shared/utils/urlHelpers";
 import { DocumentValidation } from "@shared/validations";
 import Backlink from "./Backlink";
 import Collection from "./Collection";
+import DocumentUser from "./DocumentUser";
 import FileOperation from "./FileOperation";
 import Revision from "./Revision";
 import Star from "./Star";
@@ -146,6 +148,15 @@ export const DOCUMENT_VERSION = 2;
       },
     ],
   },
+  withAllMemberships: {
+    include: [
+      {
+        model: DocumentUser,
+        as: "memberships",
+        required: false,
+      },
+    ],
+  },
   withViews: (userId: string) => {
     if (!userId) {
       return {};
@@ -164,6 +175,18 @@ export const DOCUMENT_VERSION = 2;
       ],
     };
   },
+  withMembership: (userId: string) => ({
+    include: [
+      {
+        model: DocumentUser,
+        as: "memberships",
+        where: {
+          userId,
+        },
+        required: false,
+      },
+    ],
+  }),
 }))
 @Table({ tableName: "documents", modelName: "document" })
 @Fix
@@ -403,9 +426,15 @@ class Document extends ParanoidModel {
   @BelongsTo(() => Collection, "collectionId")
   collection: Collection | null | undefined;
 
+  @BelongsToMany(() => User, () => DocumentUser)
+  users: User[];
+
   @ForeignKey(() => Collection)
   @Column(DataType.UUID)
   collectionId?: string | null;
+
+  @HasMany(() => DocumentUser, "documentId")
+  memberships: DocumentUser[];
 
   @HasMany(() => Revision)
   revisions: Revision[];
