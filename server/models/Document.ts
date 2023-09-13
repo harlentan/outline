@@ -460,7 +460,15 @@ class Document extends ParanoidModel {
     const viewScope: Readonly<ScopeOptions> = {
       method: ["withViews", userId],
     };
-    return this.scope(["defaultScope", collectionScope, viewScope]);
+    const membershipScope: Readonly<ScopeOptions> = {
+      method: ["withMembership", userId],
+    };
+    return this.scope([
+      "defaultScope",
+      collectionScope,
+      viewScope,
+      membershipScope,
+    ]);
   }
 
   static async findByPk(
