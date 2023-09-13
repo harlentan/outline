@@ -175,18 +175,23 @@ export const DOCUMENT_VERSION = 2;
       ],
     };
   },
-  withMembership: (userId: string) => ({
-    include: [
-      {
-        model: DocumentUser,
-        as: "memberships",
-        where: {
-          userId,
+  withMembership: (userId: string) => {
+    if (!userId) {
+      return {};
+    }
+    return {
+      include: [
+        {
+          model: DocumentUser,
+          as: "memberships",
+          where: {
+            userId,
+          },
+          required: false,
         },
-        required: false,
-      },
-    ],
-  }),
+      ],
+    };
+  },
 }))
 @Table({ tableName: "documents", modelName: "document" })
 @Fix
@@ -472,6 +477,9 @@ class Document extends ParanoidModel {
       "withDrafts",
       {
         method: ["withCollectionPermissions", options.userId, options.paranoid],
+      },
+      {
+        method: ["withMembership", options.userId],
       },
       {
         method: ["withViews", options.userId],
