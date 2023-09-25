@@ -42,7 +42,6 @@ import ApiKey from "./ApiKey";
 import Attachment from "./Attachment";
 import AuthenticationProvider from "./AuthenticationProvider";
 import Collection from "./Collection";
-import DocumentUser from "./DocumentUser";
 import Star from "./Star";
 import Team from "./Team";
 import UserAuthentication from "./UserAuthentication";
@@ -394,10 +393,13 @@ class User extends ParanoidModel {
   };
 
   documentIds = async () => {
-    const memberships = await DocumentUser.findAll({
+    const memberships = await UserPermission.findAll({
       attributes: ["documentId"],
       where: {
         userId: this.id,
+        documentId: {
+          [Op.ne]: null,
+        },
       },
     });
 

@@ -39,8 +39,8 @@ import {
   SearchQuery,
   User,
   View,
+  UserPermission,
 } from "@server/models";
-import DocumentUser from "@server/models/DocumentUser";
 import DocumentHelper from "@server/models/helpers/DocumentHelper";
 import SearchHelper from "@server/models/helpers/SearchHelper";
 import { authorize, cannot } from "@server/policies";
@@ -1386,7 +1386,7 @@ router.post(
     const user = await User.findByPk(userId);
     authorize(actor, "read", user);
 
-    let membership = await DocumentUser.findOne({
+    let membership = await UserPermission.findOne({
       where: {
         documentId: id,
         userId,
@@ -1396,7 +1396,7 @@ router.post(
     });
 
     if (!membership) {
-      membership = await DocumentUser.create(
+      membership = await UserPermission.create(
         {
           documentId: document.id,
           userId: user.id,
@@ -1482,16 +1482,11 @@ router.post(
   async (ctx: APIContext<T.DocumentsSharedWithUserReq>) => {
     const user = ctx.state.auth.user;
     const { sort, direction } = ctx.input.body;
-    const memberships = await DocumentUser.findAll({
-      attributes: ["documentId"],
-      where: {
-        userId: user.id,
-      },
-    });
 
+    const documentIds = await user.documentIds();
     const documents = await Document.defaultScopeWithUser(user.id).findAll({
       where: {
-        id: memberships.map((m) => m.documentId),
+        id: documentIds,
       },
       order: [[sort, direction]],
       offset: ctx.state.pagination.offset,
